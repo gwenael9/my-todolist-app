@@ -18,6 +18,7 @@ export default function TaskCard({ task, onSuccess }: TaskCardProps) {
   
   return (
     <div className="p-2 rounded border">
+      <div>{task.categorie.name}</div>
       <h2 className="font-bold">{task.title}</h2>
       <p>{task.description}</p>
       <div>

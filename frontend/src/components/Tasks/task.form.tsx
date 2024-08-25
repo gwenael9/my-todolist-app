@@ -1,8 +1,17 @@
-import { addTask } from "@/services/api";
-import { useState } from "react";
+import { addTask, getCategories } from "@/services/api";
+import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { z } from "zod";
+import { Categorie } from "@/types/interface";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface FormTaskProps {
   onSuccess: () => void;
@@ -25,12 +34,27 @@ const formSchema = z.object({
 export default function FormTasks({ onSuccess }: FormTaskProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [categories, setCategories] = useState<Categorie[]>([]);
+  const [selectedCategorieName, setSelectedCategorieName] = useState<string | null>(null);  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [validationErrors, setValidationErrors] = useState<{
     title?: string;
     description?: string;
   }>({});
+
+  const fetchDataCategories = async () => {
+    try {
+      const categoriesData = await getCategories();
+      setCategories(categoriesData);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDataCategories();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,12 +76,19 @@ export default function FormTasks({ onSuccess }: FormTaskProps) {
       return;
     }
 
+    if (!selectedCategorieName) {
+      setError("Veuillez sélectionner une catégorie.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      await addTask({ title, description });
+      await addTask({ title, description, categorie: { name: selectedCategorieName} });
 
       // si formulaire soumis, on réinitialise les champs
       setTitle("");
       setDescription("");
+      setSelectedCategorieName(null);
 
       // nous permet de mettre à jour notre liste de tâches
       onSuccess();
@@ -97,8 +128,26 @@ export default function FormTasks({ onSuccess }: FormTaskProps) {
             required
           />
           {validationErrors.description && (
-            <p className="text-red-500 text-sm mt-1">{validationErrors.description}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {validationErrors.description}
+            </p>
           )}
+        </div>
+        <div>
+          <Select onValueChange={(value) => setSelectedCategorieName(value)}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Catégorie" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {categories.map((categorie) => (
+                  <SelectItem key={categorie.id} value={categorie.name}>
+                    {categorie.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Ajout..." : "Ajouter"}
