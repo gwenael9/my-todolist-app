@@ -1,6 +1,7 @@
+import Layout from "@/components/Layout/Layout";
 import TaskCard from "@/components/Tasks/task.card";
 import FormTasks from "@/components/Tasks/task.form";
-import { getTasks } from "@/services/api";
+import { getTasks } from "@/api";
 import { Task } from "@/types/interface";
 import { useEffect, useState } from "react";
 
@@ -32,22 +33,28 @@ export default function Home() {
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return (
+      <Layout title="Erreur de chargement">
+        <div>{error}</div>
+      </Layout>
+    );
   }
 
-  if (tasks.length === 0) {
-    <div>Aucune tâche disponible.</div>;
+  if (tasks.length === 0 || !tasks) {
+    return <div>Aucune tâche disponible.</div>;
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Liste des tâches</h1>
-      <FormTasks onSuccess={fetchData} />
-      <div className="flex justify-center gap-2 mt-6">
-        {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} onSuccess={fetchData} />
-        ))}
+    <Layout title="Accueil">
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-6">Liste des tâches</h1>
+        <FormTasks onSuccess={fetchData} />
+        <div className="flex justify-center gap-2 mt-6">
+          {tasks.map((task) => (
+            <TaskCard key={task.id} task={task} onSuccess={fetchData} />
+          ))}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }

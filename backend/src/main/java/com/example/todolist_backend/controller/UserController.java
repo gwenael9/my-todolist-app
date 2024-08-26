@@ -3,6 +3,7 @@ package com.example.todolist_backend.controller;
 import com.example.todolist_backend.model.User;
 import com.example.todolist_backend.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -82,15 +83,8 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logoutUser(
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
-            HttpServletResponse response) {
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7); // Extraire le token après "Bearer "
-            return userService.logoutUser(response, token);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Authorization header must be provided");
-        }
+    public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
+        return userService.logoutUser(request, response);
     }
 
 }

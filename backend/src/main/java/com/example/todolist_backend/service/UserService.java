@@ -4,6 +4,7 @@ import com.example.todolist_backend.model.User;
 import com.example.todolist_backend.repository.UserRepository;
 import com.example.todolist_backend.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import com.example.todolist_backend.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,24 +103,39 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<?> logoutUser(HttpServletResponse response, String token) {
-        try {
-            // Blacklist the token
-            tokenBlacklistService.blacklistToken(token);
-    
-            // Remove the token cookie
-            Cookie cookie = new Cookie("token", null);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(0); // Expire the cookie
-    
-            response.addCookie(cookie);
-    
-            return ResponseEntity.ok("User logged out successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during logout");
+    public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
+    try {
+        // Lire le cookie du token
+        Cookie[] cookies = request.getCookies();
+        String token = null;
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("token")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
         }
+
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token not found in cookies");
+        }
+
+        // Blacklist le token
+        tokenBlacklistService.blacklistToken(token);
+
+        // Supprimer le cookie côté client
+        Cookie deleteCookie = new Cookie("token", null);
+        deleteCookie.setPath("/");
+        deleteCookie.setHttpOnly(true);
+        deleteCookie.setMaxAge(0);
+        response.addCookie(deleteCookie);
+
+        return ResponseEntity.ok("User logged out successfully");
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during logout");
     }
+}
     
 }

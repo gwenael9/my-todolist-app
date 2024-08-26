@@ -1,4 +1,4 @@
-import { addTask, getCategories } from "@/services/api";
+import { addTask, getCategories } from "@/api";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";

@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { Button } from "../ui/button";
-import { deleteTask } from "@/services/api";
+import { deleteTask } from "@/api";
 import { Task } from "@/types/interface";
 
 interface TaskCardProps {
