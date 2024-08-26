@@ -3,6 +3,7 @@ package com.example.todolist_backend.controller;
 import com.example.todolist_backend.model.User;
 import com.example.todolist_backend.service.UserService;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // Créer un nouvel utilisateur
     @PostMapping("/register")
     public ResponseEntity<?> createUser(@RequestBody User user) {
         try {
@@ -29,14 +29,12 @@ public class UserController {
         }
     }
 
-    // Récupérer tous les utilisateurs
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
-    // Récupérer un utilisateur par son ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
@@ -47,25 +45,23 @@ public class UserController {
         }
     }
 
-    // Mise à jour du mot de passe d'un utilisateur
     @PutMapping("/{id}/password")
-    public ResponseEntity<?> updateUserPassword(@PathVariable Long id, @RequestBody Map<String, String> passwordRequest) {
+    public ResponseEntity<?> updateUserPassword(@PathVariable Long id,
+            @RequestBody Map<String, String> passwordRequest) {
         String newPassword = passwordRequest.get("newPassword");
 
-        // Vérifier si le champ "newPassword" est fourni
         if (newPassword == null || newPassword.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("New password must be provided");
         }
 
         try {
-            User updatedUser = userService.updateUserPassword(id, newPassword);
+            userService.updateUserPassword(id, newPassword);
             return ResponseEntity.ok("Password updated successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
     }
 
-    // Supprimer un utilisateur
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
@@ -76,20 +72,25 @@ public class UserController {
         }
     }
 
-    // Connexion d'un utilisateur
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> loginRequest) {
-        return userService.loginUser(loginRequest);
+    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> credentials, HttpServletResponse response) {
+        try {
+            return userService.loginUser(response, credentials);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed");
+        }
     }
 
-    // Déconnexion d'un utilisateur
     @PostMapping("/logout")
-    public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<?> logoutUser(
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
+            HttpServletResponse response) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            return userService.logoutUser(token);
+            String token = authorizationHeader.substring(7); // Extraire le token après "Bearer "
+            return userService.logoutUser(response, token);
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Authorization header must be provided");
         }
     }
+
 }

@@ -1,6 +1,5 @@
 package com.example.todolist_backend.config;
 
-// import com.example.todolist_backend.service.CustomUserDetailsService;
 import com.example.todolist_backend.util.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,13 +17,10 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
 
-    // @Autowired
-    // private CustomUserDetailsService customUserDetailsService;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.disable()) // Disable CSRF protection, be cautious with this!
             .authorizeHttpRequests(authorizeRequests -> 
                 authorizeRequests
                     .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -36,6 +32,7 @@ public class SecurityConfig {
                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );
 
+        // Add JWT filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
