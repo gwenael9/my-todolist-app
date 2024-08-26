@@ -36,3 +36,14 @@ export const getCategories = async () => {
     const response = await axios.get(`${API_URL}/categories`);
     return response.data;
 }
+
+// nouvelle categorie
+export const addCategorie = async (categorieData: { name: string}) => {
+    const response = await axios.post(`${API_URL}/categories`, categorieData);
+    return response.data;
+} 
+
+export const deleteCategorie = async (categorieId: number) => {
+    const response = await axios.delete(`${API_URL}/categories/${categorieId}`);
+    return response.data;
+}
