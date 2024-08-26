@@ -31,14 +31,14 @@ public class TaskService {
     // Récupérer une tâche par ID
     public Task getTaskById(final Long id) {
         return taskRepository.findById(id)
-            .orElseThrow(() -> new TaskNotFoundException(id));
+                .orElseThrow(() -> new TaskNotFoundException(id));
     }
 
     // Créer une nouvelle tâche
     public Task createTask(Task task) {
         Categorie categorie = categorieRepository.findByName(task.getCategorie().getName());
 
-        if(categorie == null) {
+        if (categorie == null) {
             throw new RuntimeException("Categorie inconnu : " + task.getCategorie().getName());
         }
 
