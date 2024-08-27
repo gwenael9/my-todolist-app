@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { Button } from "../ui/button";
 import { deleteTask } from "@/api";
 import { Task } from "@/types/interface";
+import { useToast } from "../ui/use-toast";
 
 interface TaskCardProps {
   task: Task;
@@ -10,10 +11,23 @@ interface TaskCardProps {
 
 export default function TaskCard({ task, onSuccess }: TaskCardProps) {
 
+  const { toast } = useToast();
+
   // supprimer une tâche
   const handleDeleteTask = async (id: number) => {
-    await deleteTask(id);
-    onSuccess();
+    try {
+      const messageDelete = await deleteTask(id);
+      onSuccess();
+      toast({
+        title: messageDelete,
+      })
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erreur lors de la suppression.",
+        variant: "destructive"
+      })
+    }
   };
   
   return (

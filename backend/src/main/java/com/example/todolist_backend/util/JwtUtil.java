@@ -5,6 +5,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Component;
 
@@ -28,7 +30,6 @@ public class JwtUtil {
     public String extractRoles(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
-    
 
     // Méthode pour extraire l'expiration du JWT
     public Date extractExpiration(String token) {
@@ -44,10 +45,10 @@ public class JwtUtil {
     // Extraire toutes les claims du JWT
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                   .setSigningKey(getSigningKey())
-                   .build()
-                   .parseClaimsJws(token)
-                   .getBody();
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     // Vérifie si le token est expiré
@@ -62,16 +63,15 @@ public class JwtUtil {
         return createToken(claims, username);
     }
 
-
     // Créer le JWT avec les claims et le sujet
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
-                   .setClaims(claims)
-                   .setSubject(subject)
-                   .setIssuedAt(new Date(System.currentTimeMillis()))
-                   .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 heures
-                   .signWith(getSigningKey(), SignatureAlgorithm.HS256) // Utilisation de la nouvelle méthode
-                   .compact();
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 heures
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256) // Utilisation de la nouvelle méthode
+                .compact();
     }
 
     // Valider le token JWT
@@ -84,5 +84,19 @@ public class JwtUtil {
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY); // Décodez la clé base64
         return Keys.hmacShaKeyFor(keyBytes); // Utilisez la clé déchiffrée pour générer la clé HMAC
+    }
+
+    public String extractTokenFromRequest(HttpServletRequest request) {
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("token")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        return token;
     }
 }

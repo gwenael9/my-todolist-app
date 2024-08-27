@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -85,6 +87,22 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
         return userService.logoutUser(request, response);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getAuthenticatedUserInfo() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // vérifie si l'user est authentifié
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            String username = authentication.getName();
+
+            User user = userService.getUserByUsername(username);
+
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utilisateur non connecté.");
+        }
     }
 
 }

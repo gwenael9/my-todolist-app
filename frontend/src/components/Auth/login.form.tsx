@@ -2,26 +2,32 @@ import { login } from "@/api";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-
+import { useRouter } from "next/router";
+import { useToast } from "../ui/use-toast";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  const router = useRouter();
+  const { toast } = useToast();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     try {
-      //   await addTask({ title, description, categorie: { name: selectedCategorieName} });
       await login(username, password);
-
-      // si formulaire soumis, on réinitialise les champs
-      setUsername("");
-      setPassword("");
+      router.push("/");
+      toast({
+        title: `Bienvenue ${username} !`,
+      });
     } catch (err) {
-      setError("Une erreur est sourvenue. Veuillez réessayer.");
+      toast({
+        title: "Une erreur est sourvenue. Veuillez réessayer.",
+        variant: "destructive"
+      });
     }
   };
 

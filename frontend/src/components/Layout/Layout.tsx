@@ -1,6 +1,7 @@
 import Head from "next/head";
 import { Header } from "./Header";
 import { ReactNode } from "react";
+import { Toaster } from "../ui/toaster";
 
 interface LayoutProps {
     title: string;
@@ -15,6 +16,7 @@ export default function Layout({ title, children }: LayoutProps) {
       </Head>
       <Header />
       <main>{children}</main>
+      <Toaster />
     </>
   );
 }

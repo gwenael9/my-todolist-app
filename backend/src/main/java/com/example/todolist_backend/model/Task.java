@@ -27,14 +27,19 @@ public class Task {
 
     private boolean completed;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     public Task() {
     }
 
-    public Task(String title, String description, Categorie categorie, boolean completed) {
+    public Task(String title, String description, Categorie categorie, boolean completed, User user) {
         this.title = title;
         this.description = description;
         this.categorie = categorie;
         this.completed = completed;
+        this.user = user;
     }
 
     // getters et setters
@@ -76,6 +81,14 @@ public class Task {
 
     public void setCompleted(boolean completed) {
         this.completed = completed;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
 }

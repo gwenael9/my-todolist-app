@@ -1,8 +1,13 @@
 package com.example.todolist_backend.controller;
 
 import com.example.todolist_backend.service.TaskService;
+import com.example.todolist_backend.service.UserService;
+import com.example.todolist_backend.util.JwtUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import com.example.todolist_backend.model.Task;
-import com.example.todolist_backend.exception.TaskNotFoundException;
+import com.example.todolist_backend.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,43 +21,88 @@ public class TaskController {
     @Autowired
     private final TaskService taskService;
 
-    public TaskController(TaskService taskService) {
+    @Autowired
+    private final UserService userService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    public TaskController(TaskService taskService, UserService userService, JwtUtil jwtUtil) {
         this.taskService = taskService;
+        this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
     @GetMapping
-    public List<Task> getAllTasks() {
-        return taskService.getAllTasks();
+    public List<Task> getAllTasks(HttpServletRequest request) {
+        // extraire le token et username
+        String token = jwtUtil.extractTokenFromRequest(request);
+        String username = jwtUtil.extractUsername(token);
+
+        // récupère l'user connecté
+        User user = userService.getUserByUsername(username);
+
+        // retourne les tâches de cet user
+        return taskService.getTasksByUser(user);
     }
 
+    // Récupère une tâche par ID pour l'utilisateur connecté
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable Long id) {
-        Task task = taskService.getTaskById(id);
+    public ResponseEntity<Task> getTaskById(@PathVariable Long id, HttpServletRequest request) {
+        // Extraire le token et le nom d'utilisateur
+        String token = jwtUtil.extractTokenFromRequest(request);
+        String username = jwtUtil.extractUsername(token);
+
+        // Récupérer l'utilisateur connecté
+        User user = userService.getUserByUsername(username);
+
+        // Récupérer la tâche si elle appartient à l'utilisateur
+        Task task = taskService.getTaskByIdAndUser(id, user);
         return ResponseEntity.ok(task);
     }
 
+    // Crée une tâche pour l'utilisateur connecté
     @PostMapping
-    public Task createTask(@RequestBody Task task) {
+    public Task createTask(@RequestBody Task task, HttpServletRequest request) {
+        // Extraire le token et le nom d'utilisateur
+        String token = jwtUtil.extractTokenFromRequest(request);
+        String username = jwtUtil.extractUsername(token);
+
+        // Récupérer l'utilisateur connecté
+        User user = userService.getUserByUsername(username);
+
+        // Assigner l'utilisateur à la tâche avant de la créer
+        task.setUser(user);
         return taskService.createTask(task);
     }
 
+    // Met à jour une tâche existante de l'utilisateur connecté
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task taskDetails) {
-        try {
-            Task updatedTask = taskService.updateTask(id, taskDetails);
-            return ResponseEntity.ok(updatedTask);
-        } catch (TaskNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task taskDetails, HttpServletRequest request) {
+        // Extraire le token et le nom d'utilisateur
+        String token = jwtUtil.extractTokenFromRequest(request);
+        String username = jwtUtil.extractUsername(token);
+
+        // Récupérer l'utilisateur connecté
+        User user = userService.getUserByUsername(username);
+
+        // Mettre à jour la tâche si elle appartient à l'utilisateur
+        Task updatedTask = taskService.updateTask(id, taskDetails, user);
+        return ResponseEntity.ok(updatedTask);
     }
 
+    // Supprime une tâche appartenant à l'utilisateur connecté
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        try {
-            taskService.deleteTask(id);
-            return ResponseEntity.ok().build();
-        } catch (TaskNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<String> deleteTask(@PathVariable Long id, HttpServletRequest request) {
+        // Extraire le token et le nom d'utilisateur
+        String token = jwtUtil.extractTokenFromRequest(request);
+        String username = jwtUtil.extractUsername(token);
+
+        // Récupérer l'utilisateur connecté
+        User user = userService.getUserByUsername(username);
+
+        // Supprimer la tâche si elle appartient à l'utilisateur
+        taskService.deleteTask(id, user);
+        return ResponseEntity.ok("La tâche a bien été supprimée.");
     }
 }

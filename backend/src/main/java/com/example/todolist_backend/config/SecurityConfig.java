@@ -29,7 +29,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
                 .requestMatchers(HttpMethod.PUT, "/categories/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/categories/**").hasRole("ADMIN")
                 .requestMatchers("/categories/**").permitAll()
-                .requestMatchers("/tasks/**").authenticated()
+                // .requestMatchers("/tasks/**").authenticated() // a revoir (impossible de supprimer une tâche)
                 .anyRequest().permitAll()
         )
         .sessionManagement(sessionManagement -> 

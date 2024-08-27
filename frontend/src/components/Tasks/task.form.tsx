@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useToast } from "../ui/use-toast";
 
 interface FormTaskProps {
   onSuccess: () => void;
@@ -35,13 +36,17 @@ export default function FormTasks({ onSuccess }: FormTaskProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categories, setCategories] = useState<Categorie[]>([]);
-  const [selectedCategorieName, setSelectedCategorieName] = useState<string | null>(null);  
+  const [selectedCategorieName, setSelectedCategorieName] = useState<
+    string | null
+  >(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [validationErrors, setValidationErrors] = useState<{
     title?: string;
     description?: string;
   }>({});
+
+  const { toast } = useToast();
 
   const fetchDataCategories = async () => {
     try {
@@ -83,7 +88,15 @@ export default function FormTasks({ onSuccess }: FormTaskProps) {
     }
 
     try {
-      await addTask({ title, description, categorie: { name: selectedCategorieName} });
+      await addTask({
+        title,
+        description,
+        categorie: { name: selectedCategorieName },
+      });
+
+      toast({
+        title: `La tâche ${title} a bien été créée !`,
+      });
 
       // si formulaire soumis, on réinitialise les champs
       setTitle("");
@@ -93,7 +106,10 @@ export default function FormTasks({ onSuccess }: FormTaskProps) {
       // nous permet de mettre à jour notre liste de tâches
       onSuccess();
     } catch (err) {
-      setError("Une erreur est sourvenue. Veuillez réessayer.");
+      toast({
+        title: "Une erreur est sourvenue. Veuillez réessayer.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }

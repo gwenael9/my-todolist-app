@@ -62,7 +62,8 @@ public class JwtFilter extends OncePerRequestFilter {
                     UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
                     // Validate token and check if it is blacklisted
-                    if (jwtUtil.validateToken(token, userDetails.getUsername()) && !tokenBlacklistService.isTokenBlacklisted(token)) {
+                    if (jwtUtil.validateToken(token, userDetails.getUsername())
+                            && !tokenBlacklistService.isTokenBlacklisted(token)) {
                         // Extract the role directly as a string
                         String role = jwtUtil.extractRoles(token);
                         logger.info("Extracted role from token: {}", role);
@@ -71,8 +72,8 @@ public class JwtFilter extends OncePerRequestFilter {
                         Collection<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
 
                         // Create authentication token
-                        UsernamePasswordAuthenticationToken authenticationToken = 
-                                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, authorities);
 
                         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 

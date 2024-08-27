@@ -2,6 +2,7 @@ package com.example.todolist_backend.service;
 
 import com.example.todolist_backend.model.Categorie;
 import com.example.todolist_backend.model.Task;
+import com.example.todolist_backend.model.User;
 import com.example.todolist_backend.repository.CategorieRepository;
 import com.example.todolist_backend.repository.TaskRepository;
 import com.example.todolist_backend.exception.TaskNotFoundException;
@@ -21,6 +22,11 @@ public class TaskService {
 
     public TaskService(final TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
+    }
+
+    // Récupérer les tâches créées par un utilisateur spécifique
+    public List<Task> getTasksByUser(User user) {
+        return taskRepository.findByUser(user);
     }
 
     // Récupérer toutes les tâches
@@ -47,9 +53,9 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    // Mettre à jour une tâche existante
-    public Task updateTask(final Long id, final Task taskDetails) {
-        Task existingTask = getTaskById(id);
+    // Mettre à jour une tâche existante appartenant à un utilisateur
+    public Task updateTask(Long id, Task taskDetails, User user) {
+        Task existingTask = getTaskByIdAndUser(id, user); // Vérifie que la tâche appartient à l'utilisateur
         existingTask.setTitle(taskDetails.getTitle());
         existingTask.setDescription(taskDetails.getDescription());
         existingTask.setCategorie(taskDetails.getCategorie());
@@ -58,8 +64,14 @@ public class TaskService {
     }
 
     // Supprimer une tâche par ID
-    public void deleteTask(final Long id) {
-        Task existingTask = getTaskById(id);
+    public void deleteTask(Long id, User user) {
+        Task existingTask = getTaskByIdAndUser(id, user);
         taskRepository.delete(existingTask);
+    }
+
+    // Récupérer une tâche par ID et utilisateur
+    public Task getTaskByIdAndUser(Long id, User user) {
+        return taskRepository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new TaskNotFoundException(id));
     }
 }

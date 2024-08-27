@@ -40,24 +40,20 @@ export default function Home() {
     );
   }
 
-  if (tasks.length === 0) {
-    return (
-      <Layout title="Accueil">
-        <div>Aucune tâche disponible.</div>
-      </Layout>
-    );
-  }
-
   return (
     <Layout title="Accueil">
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Liste des tâches</h1>
         <FormTasks onSuccess={fetchData} />
-        <div className="flex justify-center gap-2 mt-6">
-          {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onSuccess={fetchData} />
-          ))}
-        </div>
+        {tasks.length > 0 ? (
+          <div className="flex justify-center gap-2 mt-6">
+            {tasks.map((task) => (
+              <TaskCard key={task.id} task={task} onSuccess={fetchData} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center">Aucune tâche pour le moment.</div>
+        )}
       </div>
     </Layout>
   );

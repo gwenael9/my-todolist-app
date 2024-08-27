@@ -10,3 +10,8 @@ export interface Categorie {
   id: number;
   name: string;
 }
+
+export interface User {
+  username: string;
+  role: string;
+}
