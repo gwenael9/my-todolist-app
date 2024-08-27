@@ -1,8 +1,6 @@
 package com.example.todolist_backend.model;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -17,9 +15,7 @@ public class User {
 
     private String username;
     private String password;
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    private String role;
 
     public String getUsername() {
         return username;
@@ -45,13 +41,14 @@ public class User {
         this.id = id;
     }
 
-    public Role getRole() {
+    public String getRole() {
         return role;
     }
 
-    public void setRole(Role role) {
+    public void setRole(String role) {
+        if (!role.equals("USER") && !role.equals("ADMIN")) {
+            throw new IllegalArgumentException("Invalid role zebiiii");
+        }
         this.role = role;
     }
-
-
 }

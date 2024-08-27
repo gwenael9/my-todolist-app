@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/auth")
 public class UserController {
 
     @Autowired
@@ -30,13 +30,13 @@ public class UserController {
         }
     }
 
-    @GetMapping
+    @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/users/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
             User user = userService.getUserById(id);
@@ -46,7 +46,7 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{id}/password")
+    @PutMapping("/users/{id}/password")
     public ResponseEntity<?> updateUserPassword(@PathVariable Long id,
             @RequestBody Map<String, String> passwordRequest) {
         String newPassword = passwordRequest.get("newPassword");
@@ -63,7 +63,7 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/users/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
             userService.deleteUser(id);

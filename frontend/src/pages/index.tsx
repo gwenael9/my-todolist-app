@@ -40,8 +40,12 @@ export default function Home() {
     );
   }
 
-  if (tasks.length === 0 || !tasks) {
-    return <div>Aucune tâche disponible.</div>;
+  if (tasks.length === 0) {
+    return (
+      <Layout title="Accueil">
+        <div>Aucune tâche disponible.</div>
+      </Layout>
+    );
   }
 
   return (

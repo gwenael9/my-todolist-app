@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -23,6 +24,11 @@ public class JwtUtil {
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
+
+    public String extractRoles(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+    
 
     // Méthode pour extraire l'expiration du JWT
     public Date extractExpiration(String token) {
@@ -50,10 +56,12 @@ public class JwtUtil {
     }
 
     // Générer un token JWT
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("role", "ROLE_" + role);
         return createToken(claims, username);
     }
+
 
     // Créer le JWT avec les claims et le sujet
     private String createToken(Map<String, Object> claims, String subject) {

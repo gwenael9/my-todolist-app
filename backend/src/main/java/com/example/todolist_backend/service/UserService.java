@@ -37,7 +37,7 @@ public class UserService {
 
     public User getUserById(final Long id) {
         return userRepository.findById(id)
-            .orElseThrow(() -> new UserNotFoundException(id));
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public User getUserByUsername(final String username) {
@@ -48,11 +48,19 @@ public class UserService {
         return user;
     }
 
+    // Crée un utilisateur dans la base de données avec un mot de passe encodé
     public User createUser(User user) {
-        if (userRepository.findById(user.getId()) != null) {
-            throw new IllegalArgumentException("L'utilisateur existe déjà.");
+        // Vérifie si l'utilisateur existe déjà
+        if (userRepository.findByUsername(user.getUsername()) != null) {
+            throw new IllegalArgumentException("User already exists with this username.");
         }
 
+        // Définit le rôle par défaut si non spécifié
+        if (user.getRole() == null) {
+            user.setRole("USER");
+        }
+
+        // Encode le mot de passe avant de sauvegarder l'utilisateur
         user.setPassword(PasswordUtils.encodePassword(user.getPassword()));
         return userRepository.save(user);
     }
@@ -87,7 +95,7 @@ public class UserService {
 
         try {
             User user = validateUserCredentials(username, password);
-            String token = jwtUtil.generateToken(user.getUsername());
+            String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
 
             Cookie cookie = new Cookie("token", token);
             cookie.setHttpOnly(true);
@@ -104,38 +112,38 @@ public class UserService {
     }
 
     public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
-    try {
-        // Lire le cookie du token
-        Cookie[] cookies = request.getCookies();
-        String token = null;
+        try {
+            // Lire le cookie du token
+            Cookie[] cookies = request.getCookies();
+            String token = null;
 
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("token")) {
-                    token = cookie.getValue();
-                    break;
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (cookie.getName().equals("token")) {
+                        token = cookie.getValue();
+                        break;
+                    }
                 }
             }
+
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token not found in cookies");
+            }
+
+            // Blacklist le token
+            tokenBlacklistService.blacklistToken(token);
+
+            // Supprimer le cookie côté client
+            Cookie deleteCookie = new Cookie("token", null);
+            deleteCookie.setPath("/");
+            deleteCookie.setHttpOnly(true);
+            deleteCookie.setMaxAge(0);
+            response.addCookie(deleteCookie);
+
+            return ResponseEntity.ok("User logged out successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during logout");
         }
-
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token not found in cookies");
-        }
-
-        // Blacklist le token
-        tokenBlacklistService.blacklistToken(token);
-
-        // Supprimer le cookie côté client
-        Cookie deleteCookie = new Cookie("token", null);
-        deleteCookie.setPath("/");
-        deleteCookie.setHttpOnly(true);
-        deleteCookie.setMaxAge(0);
-        response.addCookie(deleteCookie);
-
-        return ResponseEntity.ok("User logged out successfully");
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during logout");
     }
-}
-    
+
 }
