@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TaskService {
@@ -55,12 +56,30 @@ public class TaskService {
 
     // Mettre à jour une tâche existante appartenant à un utilisateur
     public Task updateTask(Long id, Task taskDetails, User user) {
-        Task existingTask = getTaskByIdAndUser(id, user); // Vérifie que la tâche appartient à l'utilisateur
+        Task existingTask = getTaskByIdAndUser(id, user); 
         existingTask.setTitle(taskDetails.getTitle());
         existingTask.setDescription(taskDetails.getDescription());
-        existingTask.setCategorie(taskDetails.getCategorie());
+        // existingTask.setCompleted(taskDetails.isCompleted());
+
+        if (taskDetails.getCategorie() != null && taskDetails.getCategorie().getId() != null) {
+            Optional<Categorie> categorieOpt = categorieRepository.findById(taskDetails.getCategorie().getId());
+
+            Categorie categorie = categorieOpt.orElseThrow(() -> new RuntimeException("Erreuuuuuuur"));
+
+            existingTask.setCategorie(categorie);
+                
+        }
+        
+        // existingTask.setCategorie(taskDetails.getCategorie());
+        return taskRepository.save(existingTask);
+    }
+    
+    // modification tâche terminée ou non
+    public Task updateTaskCompleted(Long id, Task taskDetails, User user) {
+        Task existingTask = getTaskByIdAndUser(id, user);
         existingTask.setCompleted(taskDetails.isCompleted());
         return taskRepository.save(existingTask);
+
     }
 
     // Supprimer une tâche par ID

@@ -26,19 +26,20 @@ export const addTask = async (taskData: {
   }
 };
 
-// modifie une tâche
-export const updateTask = async (
-  taskId: number,
-  updatedTaskData: { title?: string; description?: string; completed?: boolean }
-) => {
+// modifier une tâche
+export const updateTask = async (taskId: number, updateData: {
+  title: string;
+  description: string;
+  categorie: { id: number };
+}) => {
   try {
-    const response = await apiClient.put(`/tasks/${taskId}`, updatedTaskData);
+    const response = await apiClient.put(`/tasks/${taskId}`, updateData);
     return response.data;
   } catch (err) {
     console.error("Failed to update task");
     throw err;
   }
-};
+}
 
 // supprime une tâche
 export const deleteTask = async (taskId: number) => {

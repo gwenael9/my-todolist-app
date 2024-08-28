@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useToast } from "../ui/use-toast";
+import { Button } from "../ui/button";
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -28,13 +29,13 @@ export function Header() {
       router.push("/connexion");
       toast({
         title: "Aurevoir !",
-      })
+      });
     } catch (err) {
       console.log("Error during logout", err);
       toast({
         title: "Erreur lors de la déconnexion. Veuillez Réessayer.",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     }
   };
 
@@ -46,12 +47,9 @@ export function Header() {
     <div className="flex gap-4 uppercase font-bold justify-between items-center h-20 border-b px-4">
       <Link href="/">Accueil</Link>
       {user ? (
-        <>
-          <span>Bienvenue, {user.username}</span>
-          <button onClick={handleLogout}>Déconnexion</button>
-        </>
+        <Button variant="destructive" onClick={handleLogout}>Déconnexion</Button>
       ) : (
-        <Link href="/connexion">Connexion</Link>
+        <Button onClick={() => router.push("/connexion")}>Connexion</Button>
       )}
     </div>
   );

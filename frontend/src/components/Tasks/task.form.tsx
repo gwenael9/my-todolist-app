@@ -1,9 +1,9 @@
-import { addTask, getCategories } from "@/api";
+import { addTask, getCategories, updateTask } from "@/api";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { z } from "zod";
-import { Categorie } from "@/types/interface";
+import { Categorie, Task } from "@/types/interface";
 import {
   Select,
   SelectContent,
@@ -13,164 +13,234 @@ import {
   SelectValue,
 } from "../ui/select";
 import { useToast } from "../ui/use-toast";
-
-interface FormTaskProps {
-  onSuccess: () => void;
-}
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { Label } from "../ui/label";
+import { Pencil } from "lucide-react";
 
 const formSchema = z.object({
   title: z
     .string()
-    .min(2, {
-      message: "Le titre doit contenir au moins 2 caractères.",
-    })
-    .max(50, {
-      message: "Le titre ne peux dépasser 50 caractères.",
-    }),
-  description: z.string().min(5, {
-    message: "La description doit contenir au moins 5 caractères.",
-  }),
+    .min(2, "Le titre doit contenir au moins 2 caractères.")
+    .max(20, "Le titre ne peut dépasser 20 caractères."),
+  description: z
+    .string()
+    .min(5, "La description doit contenir au moins 5 caractères."),
 });
 
-export default function FormTasks({ onSuccess }: FormTaskProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+interface TaskFormProps {
+  initialData?: Task;
+  submitLabel: string;
+  onSuccess: () => void;
+}
+
+export default function FormTasks({
+  initialData,
+  submitLabel,
+  onSuccess,
+}: TaskFormProps) {
+
+  // Sois on récup les valeurs de la tâche à modifier sois vide
+  const [title, setTitle] = useState(initialData?.title || "");
+  const [description, setDescription] = useState(
+    initialData?.description || ""
+  );
+  const [selectedCategorie, setSelectedCategorie] = useState<string>(
+    initialData?.categorie.name || ""
+  );
+  const [selectedCategorieId, setSelectedCategorieId] = useState<number>(
+    initialData?.categorie.id || 0
+  );
+  // toutes nos catégories
   const [categories, setCategories] = useState<Categorie[]>([]);
-  const [selectedCategorieName, setSelectedCategorieName] = useState<
-    string | null
-  >(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [validationErrors, setValidationErrors] = useState<{
+
+  // gère l'ouverture de la modal
+  const [isOpen, setIsOpen] = useState(false);
+
+  // gère les erreurs
+  const [error, setError] = useState<{
     title?: string;
     description?: string;
+    categorie?: string;
   }>({});
 
   const { toast } = useToast();
 
-  const fetchDataCategories = async () => {
+  // récup et stock nos catégories
+  useEffect(() => {
+    getCategories().then(setCategories).catch(console.error);
+  }, []);
+
+  // soumission du formulaire
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError({});
+
+    // on vérifie que nos données soit valide
+    const validation = formSchema.safeParse({ title, description });
+
+    // si pas valide, on renvoie une erreur
+    if (!validation.success) {
+      const fieldErrors = validation.error.formErrors.fieldErrors;
+      setError({
+        title: fieldErrors.title ? fieldErrors.title[0] : "",
+        description: fieldErrors.description ? fieldErrors.description[0] : "",
+      });
+      return;
+    }
+
+    // si aucune catégorie de selectionnée, on renvoie une erreur
+    if (!selectedCategorie) {
+      setError((prevError) => ({
+        ...prevError,
+        categorie: "Veuillez sélectionner une catégorie.",
+      }));
+      return;
+    }
+
+    // on modifie/ajoute la tâche
     try {
-      const categoriesData = await getCategories();
-      setCategories(categoriesData);
-    } catch (err) {
-      console.error(err);
+      if (initialData) {
+        // mise à jour de la tâche
+        await updateTask(initialData.id, {
+          title,
+          description,
+          categorie: { id: selectedCategorieId },
+        });
+        toast({ title: "Tâche modifiée avec succès !" });
+      } else {
+        // ajout de la nouvelle tâche
+        await addTask({
+          title,
+          description,
+          categorie: { name: selectedCategorie },
+        });
+        toast({ title: `La tâche "${title}" a été créée avec succès !` });
+      }
+      // si tout est bon, le refetch de nos tasks est faites (page /taches)
+      onSuccess();
+      // on ferme la modal
+      setIsOpen(false);
+    } catch (error) {
+      toast({
+        title: "Une erreur est survenue.",
+        variant: "destructive",
+      });
     }
   };
 
-  useEffect(() => {
-    fetchDataCategories();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError("");
-    setValidationErrors({});
-
-    const result = formSchema.safeParse({ title, description });
-    if (!result.success) {
-      // gère les erreurs de validation spécifiques à chaque champ
-      const fieldErrors = result.error.formErrors.fieldErrors;
-      setValidationErrors({
-        title: fieldErrors.title ? fieldErrors.title[0] : undefined,
-        description: fieldErrors.description
-          ? fieldErrors.description[0]
-          : undefined,
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!selectedCategorieName) {
-      setError("Veuillez sélectionner une catégorie.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      await addTask({
-        title,
-        description,
-        categorie: { name: selectedCategorieName },
-      });
-
-      toast({
-        title: `La tâche ${title} a bien été créée !`,
-      });
-
-      // si formulaire soumis, on réinitialise les champs
-      setTitle("");
-      setDescription("");
-      setSelectedCategorieName(null);
-
-      // nous permet de mettre à jour notre liste de tâches
-      onSuccess();
-    } catch (err) {
-      toast({
-        title: "Une erreur est sourvenue. Veuillez réessayer.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
+  // a chaque fois qu'on change de categorie
+  const handleCategorieChange = (name: string) => {
+    // on défini son nom
+    setSelectedCategorie(name);
+    // on recup son id
+    const selectedCat = categories.find((cat) => cat.name === name);
+    if (selectedCat) {
+      setSelectedCategorieId(selectedCat.id);
     }
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <h2 className="font-bold">Ajouter une tâche</h2>
-      <form onSubmit={handleSubmit} className="flex space-x-2">
-        <div>
-          <Input
-            type="text"
-            placeholder="Titre"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="flex-1"
-            required
-          />
-          {validationErrors.title && (
-            <p className="text-red-500 text-sm mt-1">
-              {validationErrors.title}
-            </p>
-          )}
-        </div>
-        <div>
-          <Input
-            type="text"
-            placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="flex-1"
-            required
-          />
-          {validationErrors.description && (
-            <p className="text-red-500 text-sm mt-1">
-              {validationErrors.description}
-            </p>
-          )}
-        </div>
-        <div>
-          <Select onValueChange={(value) => setSelectedCategorieName(value)}>
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Catégorie" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {categories.map((categorie) => (
-                  <SelectItem key={categorie.id} value={categorie.name}>
-                    {categorie.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Ajout..." : "Ajouter"}
-        </Button>
-      </form>
-
-      {error && <p className="text-red-500 mt-2">{error}</p>}
-    </div>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+      }}
+    >
+      <DialogTrigger asChild>
+        {initialData ? (
+          <Button variant="edit" size="card">
+            <Pencil size={16} />
+          </Button>
+        ) : (
+          <Button>Ajouter une tâche</Button>
+        )}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>
+            {initialData ? "Modifier la tâche" : "Nouvelle tâche"}
+          </DialogTitle>
+          <DialogDescription>
+            Veuillez renseigner les informations suivantes.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Tâche
+              </Label>
+              <Input
+                id="name"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            {error.title && (
+              <p className="col-span-4 text-red-500 text-sm">{error.title}</p>
+            )}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="description" className="text-right">
+                Description
+              </Label>
+              <Input
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            {error.description && (
+              <p className="col-span-4 text-red-500 text-sm">
+                {error.description}
+              </p>
+            )}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="categorie" className="text-right">
+                Catégorie
+              </Label>
+              <div className="col-span-3">
+                <Select
+                  onValueChange={handleCategorieChange}
+                  value={selectedCategorie}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez une catégorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {categories.map((categorie) => (
+                        <SelectItem key={categorie.id} value={categorie.name}>
+                          {categorie.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {error.categorie && (
+              <p className="col-span-4 text-red-500 text-sm">
+                {error.categorie}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="success" type="submit">
+              {submitLabel}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

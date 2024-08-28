@@ -78,7 +78,8 @@ public class TaskController {
 
     // Met à jour une tâche existante de l'utilisateur connecté
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task taskDetails, HttpServletRequest request) {
+    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task taskDetails,
+            HttpServletRequest request) {
         // Extraire le token et le nom d'utilisateur
         String token = jwtUtil.extractTokenFromRequest(request);
         String username = jwtUtil.extractUsername(token);
