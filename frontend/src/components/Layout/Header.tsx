@@ -5,6 +5,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useToast } from "../ui/use-toast";
 import { Button } from "../ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -29,6 +37,7 @@ export function Header() {
       router.push("/connexion");
       toast({
         title: "Aurevoir !",
+        variant: "success"
       });
     } catch (err) {
       console.log("Error during logout", err);
@@ -44,13 +53,54 @@ export function Header() {
   }, []);
 
   return (
-    <div className="flex gap-4 uppercase font-bold justify-between items-center h-20 border-b px-4">
+    <div className="flex uppercase font-bold justify-between items-center h-20 border-b px-4">
       <Link href="/">Accueil</Link>
-      {user ? (
-        <Button variant="destructive" onClick={handleLogout}>Déconnexion</Button>
-      ) : (
-        <Button onClick={() => router.push("/connexion")}>Connexion</Button>
-      )}
+      <div className="flex items-center gap-4">
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Avatar className="cursor-pointer">
+                <AvatarImage
+                  src="https://github.com/shadcn.png"
+                  alt={user.username}
+                />
+                <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-48 font-semibold" align="end">
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => router.push("/taches")}
+              >
+                Tâches
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => router.push("/parametres")}
+              >
+                Paramètres
+              </DropdownMenuItem>
+              {user.role == "ADMIN" && (
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => router.push("/admin")}
+                >
+                  Admin
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator className="my-1 border-t" />
+              <DropdownMenuItem
+                className="cursor-pointer text-destructive"
+                onClick={handleLogout}
+              >
+                Déconnexion
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button onClick={() => router.push("/connexion")}>Connexion</Button>
+        )}
+      </div>
     </div>
   );
 }

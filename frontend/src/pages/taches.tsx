@@ -1,5 +1,6 @@
 import { getTasks } from "@/api";
 import Layout from "@/components/Layout/Layout";
+import Loading from "@/components/Loading";
 import TaskCard from "@/components/Tasks/task.card";
 import FormTasks from "@/components/Tasks/task.form";
 import { Task } from "@/types/interface";
@@ -29,7 +30,7 @@ export default function Taches() {
   }, []);
 
   if (loading) {
-    return "Chargement...";
+    return <Loading />;
   }
 
   if (error) {

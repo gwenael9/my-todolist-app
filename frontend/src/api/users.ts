@@ -17,3 +17,15 @@ export const getUser = async () => {
   const response = await apiClient.get("/auth/me");
   return response.data;
 }
+
+// recup tout les utilisateurs
+export const getAllUsers = async () => {
+  const response = await apiClient.get("/auth/users");
+  return response.data;
+}
+
+// supprimer un utilisateur
+export const deleteUser = async (id: number) => {
+  const response = await apiClient.delete(`/auth/users/${id}`);
+  return response.data;
+}

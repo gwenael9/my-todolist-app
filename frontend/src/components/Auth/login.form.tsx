@@ -4,11 +4,13 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useRouter } from "next/router";
 import { useToast } from "../ui/use-toast";
+import Loading from "../Loading";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
   const { toast } = useToast();
@@ -16,20 +18,28 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       await login(username, password);
       router.push("/taches");
+      setLoading(false);
       toast({
         title: `Bienvenue ${username} !`,
+        variant: "success"
       });
     } catch (err) {
+      setLoading(false);
       toast({
         title: "Une erreur est sourvenue. Veuillez réessayer.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="p-4 max-w-md mx-auto">
@@ -56,7 +66,9 @@ export default function LoginForm() {
           />
         </div>
 
-        <Button type="submit">Connexion</Button>
+        <Button variant="success" type="submit">
+          Connexion
+        </Button>
       </form>
 
       {error && <p className="text-red-500 mt-2">{error}</p>}

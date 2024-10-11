@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Label } from "../ui/label";
-import { Pencil } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 
 const formSchema = z.object({
   title: z
@@ -114,7 +114,10 @@ export default function FormTasks({
           description,
           categorie: { id: selectedCategorieId },
         });
-        toast({ title: "Tâche modifiée avec succès !" });
+        toast({ 
+          title: "Tâche modifiée avec succès !",
+          variant: "success" 
+        });
       } else {
         // ajout de la nouvelle tâche
         await addTask({
@@ -122,7 +125,13 @@ export default function FormTasks({
           description,
           categorie: { name: selectedCategorie },
         });
-        toast({ title: `La tâche "${title}" a été créée avec succès !` });
+        toast({ 
+          title: `La tâche "${title}" a été créée avec succès !`,
+          variant: "success" 
+        });
+        setTitle("");
+        setDescription("");
+        setSelectedCategorie("");
       }
       // si tout est bon, le refetch de nos tasks est faites (page /taches)
       onSuccess();
@@ -160,7 +169,10 @@ export default function FormTasks({
             <Pencil size={16} />
           </Button>
         ) : (
-          <Button>Ajouter une tâche</Button>
+          <Button>
+            <Plus className="mr-2" />
+            Ajouter une tâche
+          </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -176,7 +188,7 @@ export default function FormTasks({
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
-                Tâche
+                Nom
               </Label>
               <Input
                 id="name"

@@ -1,0 +1,13 @@
+{
+    "name": "my-todolist-app",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+      "dev": "docker compose up --build",
+      "prod": "docker compose -f docker-compose.prod.yml up --build",
+      "merge": "git add . && git commit -m 'fix' && git push origin dev && git checkout main && git merge dev && git push origin main && git checkout dev",
+      "mergeM" : "git checkout main && git merge dev && git push origin main && git checkout dev"
+    },
+    "author": "Gwenael Gueho"
+  }
+  

@@ -12,6 +12,11 @@ export interface Categorie {
 }
 
 export interface User {
+  id: number;
   username: string;
   role: string;
+}
+
+export enum Role {
+  USER, ADMIN
 }

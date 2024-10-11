@@ -28,6 +28,7 @@ export default function TaskCard({ task, onSuccess }: TaskCardProps) {
       onSuccess();
       toast({
         title: messageDelete,
+        variant: "success"
       });
     } catch (err) {
       console.error(err);

@@ -22,6 +22,7 @@ const buttonVariants = cva(
         delete: "text-destructive bg-none",
         edit: "text-blue-500 bg-none",
         card: "text-destructive bg-none",
+        admin: "uppercase"
       },
       size: {
         default: "h-10 px-4 py-2",
