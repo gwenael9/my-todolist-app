@@ -23,7 +23,7 @@ services:
       - ./backend/src:/app/src
     env_file:
       - ./global.env
-      - ./backend/.env
+      - .env
     environment:
       - DB_HOST=${DB_HOST}
       - DB_USER=${DB_USER}
