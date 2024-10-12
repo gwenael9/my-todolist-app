@@ -94,7 +94,8 @@ public class UserController {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // vérifie si l'user est authentifié
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
             String username = authentication.getName();
 
             User user = userService.getUserByUsername(username);

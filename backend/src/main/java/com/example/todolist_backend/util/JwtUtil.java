@@ -8,6 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -19,8 +20,8 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // Vous pouvez stocker la clé dans le fichier de configuration
-    private String SECRET_KEY = "wK2kF8pdQ7Su4/ZXE8n8QzN0TpZgRycLflRJEsH9WvE="; // Utilisez une clé encodée en base64
+    @Value("${jwt.secret.key}")
+    private String SECRET_KEY;
 
     // Méthode pour extraire le username du JWT
     public String extractUsername(String token) {

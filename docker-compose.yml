@@ -39,3 +39,4 @@ services:
       - ./frontend/src:/app/src
     env_file:
       - ./global.env
+      - .env

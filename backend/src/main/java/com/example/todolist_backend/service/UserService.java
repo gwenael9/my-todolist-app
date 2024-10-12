@@ -52,10 +52,11 @@ public class UserService {
     public User createUser(User user) {
         // Vérifie si l'utilisateur existe déjà
         if (userRepository.findByUsername(user.getUsername()) != null) {
-            throw new IllegalArgumentException("User already exists with this username.");
+            throw new IllegalArgumentException("Ce nom d'utilisateur est déjà utilisé.");
         }
 
         // Définit le rôle par défaut si non spécifié
+        // à modifier quand on met en prod, mettre le rôle sur USER tout le temps
         if (user.getRole() == null) {
             user.setRole("USER");
         }
@@ -76,21 +77,21 @@ public class UserService {
         userRepository.delete(existingUser);
     }
 
+    // vérifier que les infos de connexion sont bonne
     public User validateUserCredentials(String username, String password) {
         User existingUser = userRepository.findByUsername(username);
         if (existingUser == null || !PasswordUtils.checkPassword(password, existingUser.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new IllegalArgumentException("Nom d'utilisateur et/ou mot de passe invalide.");
         }
         return existingUser;
     }
 
-    // Corriger la méthode loginUser pour qu'elle accepte HttpServletResponse
     public ResponseEntity<?> loginUser(HttpServletResponse response, Map<String, String> loginRequest) {
         String username = loginRequest.get("username");
         String password = loginRequest.get("password");
 
         if (username == null || password == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username and password must be provided");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Le nom d'utilisateur et/ou le mot de passe doit être renseigné.");
         }
 
         try {
