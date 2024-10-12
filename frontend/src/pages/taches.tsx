@@ -1,17 +1,16 @@
-import { getTasks } from "@/api";
-import Layout from "@/components/Layout/Layout";
-import Loading from "@/components/Loading";
-import TaskCard from "@/components/Tasks/task.card";
-import FormTasks from "@/components/Tasks/task.form";
-import { Task } from "@/types/interface";
-import { useEffect, useState } from "react";
+import { getTasks } from '@/api';
+import Layout from '@/components/Layout/Layout';
+import Loading from '@/components/Loading';
+import TaskCard from '@/components/Tasks/task.card';
+import FormTasks from '@/components/Tasks/task.form';
+import { Task } from '@/types/interface';
+import { useEffect, useState } from 'react';
 
 export default function Taches() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // appel de l'api
   const fetchData = async () => {
     try {
       const tasksData = await getTasks();
@@ -23,8 +22,8 @@ export default function Taches() {
       setLoading(false);
     }
   };
+  
 
-  // charger les tâches au 1er rendu
   useEffect(() => {
     fetchData();
   }, []);

@@ -105,6 +105,7 @@ export default function TaskCard({ task, onSuccess, admin }: TaskCardProps) {
           <Switch
             checked={isCompleted}
             onCheckedChange={(check) => updateTask(task.id, check)}
+            
           />
         )}
         <div className="flex items-center gap-4">

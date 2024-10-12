@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/tasks")
@@ -73,6 +74,7 @@ public class TaskController {
 
         // Assigner l'utilisateur à la tâche avant de la créer
         task.setUser(user);
+        task.setDateCreate(LocalDateTime.now());
         return taskService.createTask(task);
     }
 

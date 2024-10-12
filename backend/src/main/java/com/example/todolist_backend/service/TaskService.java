@@ -9,6 +9,7 @@ import com.example.todolist_backend.exception.TaskNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +28,10 @@ public class TaskService {
 
     // Récupérer les tâches créées par un utilisateur spécifique
     public List<Task> getTasksByUser(User user) {
-        return taskRepository.findByUser(user);
+        return taskRepository.findByUser(user)
+            .stream()
+            .sorted(Comparator.comparing(Task::getDateCreate).reversed())
+            .toList();
     }
 
     // Récupérer toutes les tâches

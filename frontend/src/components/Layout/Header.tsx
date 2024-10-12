@@ -34,7 +34,7 @@ export function Header() {
     try {
       await logout();
       setUser(null);
-      router.push("/connexion");
+      router.push("/");
       toast({
         title: "Aurevoir !",
         variant: "success"
@@ -98,7 +98,7 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button onClick={() => router.push("/connexion")}>Connexion</Button>
+          <Button onClick={() => router.push("/auth/login")}>Connexion</Button>
         )}
       </div>
     </div>

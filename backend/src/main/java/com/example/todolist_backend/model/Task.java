@@ -1,5 +1,7 @@
 package com.example.todolist_backend.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,6 +22,7 @@ public class Task {
 
     private String title;
     private String description;
+    private LocalDateTime date_creation;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -32,14 +35,16 @@ public class Task {
     private User user;
 
     public Task() {
+        this.date_creation = LocalDateTime.now();
     }
 
-    public Task(String title, String description, Categorie categorie, boolean completed, User user) {
+    public Task(String title, String description, LocalDateTime date_creation, Categorie categorie, boolean completed, User user) {
         this.title = title;
         this.description = description;
         this.categorie = categorie;
         this.completed = completed;
         this.user = user;
+        this.date_creation = LocalDateTime.now();
     }
 
     // getters et setters
@@ -67,6 +72,15 @@ public class Task {
         this.description = description;
     }
 
+    public LocalDateTime getDateCreate() {
+        return date_creation;
+    }
+
+    // pas sur car normalement on ne peux pas modifier la date de creation, il faudrais la définir dès la création de la tâche et ne plus y toucher
+    public void setDateCreate(LocalDateTime date_creation) {
+        this.date_creation = date_creation;
+    }
+
     public Categorie getCategorie() {
         return categorie;
     }
@@ -90,5 +104,4 @@ public class Task {
     public void setUser(User user) {
         this.user = user;
     }
-
 }
