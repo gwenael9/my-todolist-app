@@ -92,6 +92,20 @@ public class TaskController {
         return ResponseEntity.ok(updatedTask);
     }
 
+    // Mettre à jour l'état 'completed' d'une tâche
+    @PatchMapping("/{id}/completed")
+    public ResponseEntity<Task> updateTaskCompleted(@PathVariable Long id, @RequestBody Task taskDetails,
+            HttpServletRequest request) {
+        // Extraire le token et l'utilisateur connecté
+        String token = jwtUtil.extractTokenFromRequest(request);
+        String username = jwtUtil.extractUsername(token);
+        User user = userService.getUserByUsername(username);
+
+        // Mettre à jour le statut 'completed' de la tâche
+        Task updatedTask = taskService.updateTaskCompleted(id, taskDetails, user);
+        return ResponseEntity.ok(updatedTask);
+    }
+
     // Supprime une tâche appartenant à l'utilisateur connecté
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTask(@PathVariable Long id, HttpServletRequest request) {

@@ -27,11 +27,14 @@ export const addTask = async (taskData: {
 };
 
 // modifier une tâche
-export const updateTask = async (taskId: number, updateData: {
-  title: string;
-  description: string;
-  categorie: { id: number };
-}) => {
+export const updateTask = async (
+  taskId: number,
+  updateData: {
+    title: string;
+    description: string;
+    categorie: { id: number };
+  }
+) => {
   try {
     const response = await apiClient.put(`/tasks/${taskId}`, updateData);
     return response.data;
@@ -39,7 +42,23 @@ export const updateTask = async (taskId: number, updateData: {
     console.error("Failed to update task");
     throw err;
   }
-}
+};
+
+// modifier l'avancement de la tâche (en cours/terminée)
+export const updateProgressTask = async (
+  taskId: number,
+  updateData: {
+    completed: boolean;
+  }
+) => {
+  try {
+    const response = await apiClient.patch(`/tasks/${taskId}/completed`, updateData);
+    return response.data;
+  } catch (err) {
+    console.error("Erreur lors de la modification de la tâches.");
+    throw err;
+  }
+};
 
 // supprime une tâche
 export const deleteTask = async (taskId: number) => {

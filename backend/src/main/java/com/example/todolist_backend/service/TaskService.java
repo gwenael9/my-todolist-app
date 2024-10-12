@@ -79,7 +79,6 @@ public class TaskService {
         Task existingTask = getTaskByIdAndUser(id, user);
         existingTask.setCompleted(taskDetails.isCompleted());
         return taskRepository.save(existingTask);
-
     }
 
     // Supprimer une tâche par ID
@@ -91,6 +90,6 @@ public class TaskService {
     // Récupérer une tâche par ID et utilisateur
     public Task getTaskByIdAndUser(Long id, User user) {
         return taskRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new TaskNotFoundException(id));
+            .orElseThrow(() -> new TaskNotFoundException(id));
     }
 }

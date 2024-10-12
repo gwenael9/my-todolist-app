@@ -93,6 +93,7 @@ export default function Admin() {
                   key={data.id}
                   task={data}
                   onSuccess={fetchDataTasks}
+                  admin={true}
                 />
               ))
             : tableSelection === "utilisateurs"

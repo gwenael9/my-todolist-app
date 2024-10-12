@@ -4,6 +4,7 @@ export interface Task {
   description: string;
   categorie: Categorie;
   completed: boolean;
+  user: User;
 }
 
 export interface Categorie {

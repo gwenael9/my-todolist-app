@@ -1,6 +1,6 @@
 import { BadgeCheck, X } from "lucide-react";
 import { Button } from "../ui/button";
-import { deleteTask } from "@/api";
+import { deleteTask, updateProgressTask } from "@/api";
 import { Task } from "@/types/interface";
 import { useToast } from "../ui/use-toast";
 import {
@@ -12,14 +12,19 @@ import {
   CardTitle,
 } from "../ui/card";
 import FormTasks from "./task.form";
+import { useState } from "react";
+import { Switch } from "../ui/switch";
 
 interface TaskCardProps {
   task: Task;
   onSuccess: () => void;
+  admin?: boolean;
 }
 
-export default function TaskCard({ task, onSuccess }: TaskCardProps) {
+export default function TaskCard({ task, onSuccess, admin }: TaskCardProps) {
   const { toast } = useToast();
+
+  const [isCompleted, setIsCompleted] = useState<boolean>(task.completed);
 
   // supprimer une tâche
   const handleDeleteTask = async (id: number) => {
@@ -28,12 +33,31 @@ export default function TaskCard({ task, onSuccess }: TaskCardProps) {
       onSuccess();
       toast({
         title: messageDelete,
-        variant: "success"
+        variant: "success",
       });
     } catch (err) {
       console.error(err);
       toast({
         title: "Erreur lors de la suppression.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateTask = async (id: number, completed: boolean) => {
+    try {
+      await updateProgressTask(id, {
+        completed: completed,
+      });
+      setIsCompleted(completed);
+      toast({        
+        title: "Tâche modifié avec succès !",
+        variant: "success",
+      });
+      onSuccess();
+    } catch (err) {
+      toast({
+        title: "Une erreur est survenue.",
         variant: "destructive",
       });
     }
@@ -49,17 +73,21 @@ export default function TaskCard({ task, onSuccess }: TaskCardProps) {
   const category = task.categorie.name.toLowerCase();
 
   // Vérifier si la catégorie existe dans categoryStyles
-  const { border, text } = categoryStyles[category] || {
+  const { text } = categoryStyles[category] || {
     border: "border-gray-200",
     text: "text-gray-200",
   };
 
   return (
-    <Card className={`border-4 ${border}`}>
+    <Card
+      className={`border-4 ${
+        task.completed ? "border-green-500" : "border-yellow-200"
+      }`}
+    >
       <CardHeader className="font-bold">
         <CardTitle className="flex justify-between min-h-12">
-          {task.title.toUpperCase()}
-          {!task.completed && (
+        {task.title ? task.title.toUpperCase() : "Untitled Task"}
+          {task.completed && (
             <span>
               <BadgeCheck color="green" />
             </span>
@@ -70,19 +98,29 @@ export default function TaskCard({ task, onSuccess }: TaskCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>{task.description}</CardContent>
-      <CardFooter className="flex gap-4">
-        <FormTasks
-          initialData={task}
-          submitLabel="Modifier"
-          onSuccess={onSuccess}
-        />
-        <Button
-          variant="delete"
-          size="card"
-          onClick={() => handleDeleteTask(task.id)}
-        >
-          <X />
-        </Button>
+      <CardFooter className="flex justify-between">
+        {admin ? (
+          <p>{task.user.username}</p>
+        ) : (
+          <Switch
+            checked={isCompleted}
+            onCheckedChange={(check) => updateTask(task.id, check)}
+          />
+        )}
+        <div className="flex items-center gap-4">
+          <FormTasks
+            initialData={task}
+            submitLabel="Modifier"
+            onSuccess={onSuccess}
+          />
+          <Button
+            variant="delete"
+            size="card"
+            onClick={() => handleDeleteTask(task.id)}
+          >
+            <X />
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );

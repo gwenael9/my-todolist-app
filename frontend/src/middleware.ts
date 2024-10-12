@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
+interface Payload {
+  email: string;
+  role: string;
+}
+
 // Décoder la clé secrète en Base64
 const SECRET_KEY = Uint8Array.from(atob(process.env.SECRET_KEY || ""), (c) =>
   c.charCodeAt(0)
@@ -16,7 +21,7 @@ export default async function middleware(request: NextRequest) {
 
   try {
     // Utiliser jose pour vérifier le JWT
-    const { payload } = await jwtVerify(token, SECRET_KEY);
+    const { payload } = await jwtVerify<Payload>(token, SECRET_KEY);
 
     // quand on va sur la page admin
     if (request.nextUrl.pathname.startsWith("/admin")) {
