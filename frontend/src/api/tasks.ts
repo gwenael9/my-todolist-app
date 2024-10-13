@@ -1,10 +1,14 @@
 import apiClient from "./apiClient";
 
 // voir nos tâches
-export const getTasks = async () => {
+export const getTasks = async (page: number = 0) => {
   try {
-    const response = await apiClient.get("/tasks");
-    return response.data;
+    const response = await apiClient.get(`/tasks?page=${page}&size=5`);
+    return {
+      tasks: response.data.content,
+      totalPages: response.data.totalPages,
+      totalElements: response.data.totalElements,
+    };
   } catch (err) {
     console.error("Failed to fetch tasks");
     throw err;

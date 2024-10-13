@@ -22,7 +22,7 @@ public class Task {
 
     private String title;
     private String description;
-    private LocalDateTime date_creation;
+    private LocalDateTime dateCreate;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -35,16 +35,16 @@ public class Task {
     private User user;
 
     public Task() {
-        this.date_creation = LocalDateTime.now();
+        this.dateCreate = LocalDateTime.now();
     }
 
-    public Task(String title, String description, LocalDateTime date_creation, Categorie categorie, boolean completed, User user) {
+    public Task(String title, String description, LocalDateTime dateCreate, Categorie categorie, boolean completed, User user) {
         this.title = title;
         this.description = description;
         this.categorie = categorie;
         this.completed = completed;
         this.user = user;
-        this.date_creation = LocalDateTime.now();
+        this.dateCreate = LocalDateTime.now();
     }
 
     // getters et setters
@@ -73,12 +73,12 @@ public class Task {
     }
 
     public LocalDateTime getDateCreate() {
-        return date_creation;
+        return dateCreate;
     }
 
     // pas sur car normalement on ne peux pas modifier la date de creation, il faudrais la définir dès la création de la tâche et ne plus y toucher
-    public void setDateCreate(LocalDateTime date_creation) {
-        this.date_creation = date_creation;
+    public void setDateCreate(LocalDateTime dateCreate) {
+        this.dateCreate = dateCreate;
     }
 
     public Categorie getCategorie() {

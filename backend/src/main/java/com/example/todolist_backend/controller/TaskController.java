@@ -9,10 +9,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import com.example.todolist_backend.model.Task;
 import com.example.todolist_backend.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.time.LocalDateTime;
 
 @RestController
@@ -35,16 +38,22 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<Task> getAllTasks(HttpServletRequest request) {
-        // extraire le token et username
+    public ResponseEntity<Page<Task>> getAllTasks(HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        // Extraire le token et username
         String token = jwtUtil.extractTokenFromRequest(request);
         String username = jwtUtil.extractUsername(token);
 
-        // récupère l'user connecté
+        // Récupérer l'utilisateur connecté
         User user = userService.getUserByUsername(username);
 
-        // retourne les tâches de cet user
-        return taskService.getTasksByUser(user);
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Retourner les tâches de cet utilisateur sous forme de page
+        Page<Task> tasksPage = taskService.getTasksByUser(user, pageable);
+
+        return ResponseEntity.ok(tasksPage); // Retourner la page dans un ResponseEntity
     }
 
     // Récupère une tâche par ID pour l'utilisateur connecté

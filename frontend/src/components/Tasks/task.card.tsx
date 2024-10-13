@@ -46,11 +46,9 @@ export default function TaskCard({ task, onSuccess, admin }: TaskCardProps) {
 
   const updateTask = async (id: number, completed: boolean) => {
     try {
-      await updateProgressTask(id, {
-        completed: completed,
-      });
+      await updateProgressTask(id, { completed });
       setIsCompleted(completed);
-      toast({        
+      toast({
         title: "Tâche modifié avec succès !",
         variant: "success",
       });
@@ -86,7 +84,7 @@ export default function TaskCard({ task, onSuccess, admin }: TaskCardProps) {
     >
       <CardHeader className="font-bold">
         <CardTitle className="flex justify-between min-h-12">
-        {task.title ? task.title.toUpperCase() : "Untitled Task"}
+          {task.title ? task.title.toUpperCase() : "Untitled Task"}
           {task.completed && (
             <span>
               <BadgeCheck color="green" />
@@ -105,7 +103,6 @@ export default function TaskCard({ task, onSuccess, admin }: TaskCardProps) {
           <Switch
             checked={isCompleted}
             onCheckedChange={(check) => updateTask(task.id, check)}
-            
           />
         )}
         <div className="flex items-center gap-4">

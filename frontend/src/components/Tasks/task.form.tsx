@@ -38,7 +38,7 @@ const formSchema = z.object({
 interface TaskFormProps {
   initialData?: Task;
   submitLabel: string;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }
 
 export default function FormTasks({
@@ -134,7 +134,7 @@ export default function FormTasks({
         setSelectedCategorie("");
       }
       // si tout est bon, le refetch de nos tasks est faites (page /taches)
-      onSuccess();
+      // onSuccess();
       // on ferme la modal
       setIsOpen(false);
     } catch (error) {
