@@ -12,11 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/tasks")
@@ -37,34 +39,61 @@ public class TaskController {
         this.jwtUtil = jwtUtil;
     }
 
-    @GetMapping
-    public ResponseEntity<Page<Task>> getAllTasks(HttpServletRequest request,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        // Extraire le token et username
+    private User getAuthenticatedUser(HttpServletRequest request) {
         String token = jwtUtil.extractTokenFromRequest(request);
         String username = jwtUtil.extractUsername(token);
+        return userService.getUserByUsername(username);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<Task>> getAllTasks(HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 
         // Récupérer l'utilisateur connecté
-        User user = userService.getUserByUsername(username);
-
+        User user = getAuthenticatedUser(request);
         Pageable pageable = PageRequest.of(page, size);
 
         // Retourner les tâches de cet utilisateur sous forme de page
         Page<Task> tasksPage = taskService.getTasksByUser(user, pageable);
 
-        return ResponseEntity.ok(tasksPage); // Retourner la page dans un ResponseEntity
+        return ResponseEntity.ok(tasksPage);
     }
+
+    @GetMapping("/finish")
+    public ResponseEntity<Page<Task>> getAllTasksFinish(HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+                
+        // Récupérer l'utilisateur connecté
+        User user = getAuthenticatedUser(request);
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Retourner les tâches de cet utilisateur sous forme de page
+        Page<Task> tasksPage = taskService.getTaskFinishByUser(user, pageable);
+
+        return ResponseEntity.ok(tasksPage);
+    }
+    
+    @GetMapping("/progress")
+    public ResponseEntity<Page<Task>> getAllTasksNotFinish(HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+
+        // Récupérer l'utilisateur connecté
+        User user = getAuthenticatedUser(request);
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Retourner les tâches de cet utilisateur sous forme de page
+        Page<Task> tasksPage = taskService.getTaskNotFinishByUser(user, pageable);
+
+        return ResponseEntity.ok(tasksPage);
+    }
+    
 
     // Récupère une tâche par ID pour l'utilisateur connecté
     @GetMapping("/{id}")
     public ResponseEntity<Task> getTaskById(@PathVariable Long id, HttpServletRequest request) {
-        // Extraire le token et le nom d'utilisateur
-        String token = jwtUtil.extractTokenFromRequest(request);
-        String username = jwtUtil.extractUsername(token);
 
         // Récupérer l'utilisateur connecté
-        User user = userService.getUserByUsername(username);
+        User user = getAuthenticatedUser(request);
 
         // Récupérer la tâche si elle appartient à l'utilisateur
         Task task = taskService.getTaskByIdAndUser(id, user);
@@ -74,12 +103,8 @@ public class TaskController {
     // Crée une tâche pour l'utilisateur connecté
     @PostMapping
     public Task createTask(@RequestBody Task task, HttpServletRequest request) {
-        // Extraire le token et le nom d'utilisateur
-        String token = jwtUtil.extractTokenFromRequest(request);
-        String username = jwtUtil.extractUsername(token);
-
         // Récupérer l'utilisateur connecté
-        User user = userService.getUserByUsername(username);
+        User user = getAuthenticatedUser(request);
 
         // Assigner l'utilisateur à la tâche avant de la créer
         task.setUser(user);
@@ -91,12 +116,8 @@ public class TaskController {
     @PutMapping("/{id}")
     public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task taskDetails,
             HttpServletRequest request) {
-        // Extraire le token et le nom d'utilisateur
-        String token = jwtUtil.extractTokenFromRequest(request);
-        String username = jwtUtil.extractUsername(token);
-
         // Récupérer l'utilisateur connecté
-        User user = userService.getUserByUsername(username);
+        User user = getAuthenticatedUser(request);
 
         // Mettre à jour la tâche si elle appartient à l'utilisateur
         Task updatedTask = taskService.updateTask(id, taskDetails, user);
@@ -107,10 +128,7 @@ public class TaskController {
     @PatchMapping("/{id}/completed")
     public ResponseEntity<Task> updateTaskCompleted(@PathVariable Long id, @RequestBody Task taskDetails,
             HttpServletRequest request) {
-        // Extraire le token et l'utilisateur connecté
-        String token = jwtUtil.extractTokenFromRequest(request);
-        String username = jwtUtil.extractUsername(token);
-        User user = userService.getUserByUsername(username);
+        User user = getAuthenticatedUser(request);
 
         // Mettre à jour le statut 'completed' de la tâche
         Task updatedTask = taskService.updateTaskCompleted(id, taskDetails, user);
@@ -120,12 +138,9 @@ public class TaskController {
     // Supprime une tâche appartenant à l'utilisateur connecté
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTask(@PathVariable Long id, HttpServletRequest request) {
-        // Extraire le token et le nom d'utilisateur
-        String token = jwtUtil.extractTokenFromRequest(request);
-        String username = jwtUtil.extractUsername(token);
 
         // Récupérer l'utilisateur connecté
-        User user = userService.getUserByUsername(username);
+        User user = getAuthenticatedUser(request);
 
         // Supprimer la tâche si elle appartient à l'utilisateur
         taskService.deleteTask(id, user);

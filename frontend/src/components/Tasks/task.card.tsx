@@ -14,6 +14,7 @@ import {
 import FormTasks from "./task.form";
 import { useState } from "react";
 import { Switch } from "../ui/switch";
+import { getColor, toUpOne } from "@/lib/functions";
 
 interface TaskCardProps {
   task: Task;
@@ -61,21 +62,6 @@ export default function TaskCard({ task, onSuccess, admin }: TaskCardProps) {
     }
   };
 
-  // classe statique car pb interpretation si dynamique
-  const categoryStyles: Record<string, { border: string; text: string }> = {
-    travail: { border: "border-travail", text: "text-travail" },
-    loisir: { border: "border-loisir", text: "text-loisir" },
-    sport: { border: "border-sport", text: "text-sport" },
-  };
-
-  const category = task.categorie.name.toLowerCase();
-
-  // Vérifier si la catégorie existe dans categoryStyles
-  const { text } = categoryStyles[category] || {
-    border: "border-gray-200",
-    text: "text-gray-200",
-  };
-
   return (
     <Card
       className={`border-4 ${
@@ -83,16 +69,18 @@ export default function TaskCard({ task, onSuccess, admin }: TaskCardProps) {
       }`}
     >
       <CardHeader className="font-bold">
-        <CardTitle className="flex justify-between min-h-12">
-          {task.title ? task.title.toUpperCase() : "Untitled Task"}
+        <CardTitle className="flex justify-between min-h-12 text-y">
+          {task.title.toUpperCase()}
           {task.completed && (
             <span>
               <BadgeCheck color="green" />
             </span>
           )}
         </CardTitle>
-        <CardDescription className={text}>
-          {task.categorie.name}
+        <CardDescription
+          className={`text-${getColor(task.categorie.name)}-500`}
+        >
+          {toUpOne(task.categorie.name)}
         </CardDescription>
       </CardHeader>
       <CardContent>{task.description}</CardContent>

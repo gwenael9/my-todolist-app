@@ -1,9 +1,12 @@
 import apiClient from "./apiClient";
 
 // voir nos tâches
-export const getTasks = async (page: number = 0) => {
+export const getTasks = async (page: number = 0, whichTask: string) => {
+
+  const path = whichTask === "all" ? "" : `/${whichTask}`;
+
   try {
-    const response = await apiClient.get(`/tasks?page=${page}&size=5`);
+    const response = await apiClient.get(`/tasks${path}?page=${page}&size=5`);
     return {
       tasks: response.data.content,
       totalPages: response.data.totalPages,

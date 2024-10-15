@@ -15,4 +15,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     // Récupérer une tâche par ID si elle appartient à un utilisateur spécifique
     Optional<Task> findByIdAndUser(Long id, User user);
+
+    // convention de nommage
+    Page<Task> findByUserAndCompletedTrue(User user, Pageable pageable);
+    Page<Task> findByUserAndCompletedFalse(User user, Pageable pageable);
 }
