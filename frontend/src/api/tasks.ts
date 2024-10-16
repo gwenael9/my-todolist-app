@@ -2,7 +2,6 @@ import apiClient from "./apiClient";
 
 // voir nos tâches
 export const getTasks = async (page: number = 0, whichTask: string) => {
-
   const path = whichTask === "all" ? "" : `/${whichTask}`;
 
   try {
@@ -59,7 +58,10 @@ export const updateProgressTask = async (
   }
 ) => {
   try {
-    const response = await apiClient.patch(`/tasks/${taskId}/completed`, updateData);
+    const response = await apiClient.patch(
+      `/tasks/${taskId}/completed`,
+      updateData
+    );
     return response.data;
   } catch (err) {
     console.error("Erreur lors de la modification de la tâches.");

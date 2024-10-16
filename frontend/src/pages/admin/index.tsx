@@ -1,36 +1,27 @@
-import { getAllUsers, getCategories, getTasks } from "@/api";
-import UserCard from "@/components/Admin/user.card";
+import { getAllUsers, getCategories } from "@/api";
+import TableAdmin from "@/components/Admin/admin.table";
 import Layout from "@/components/Layout/Layout";
 import Loading from "@/components/Loading";
-import TaskCard from "@/components/Tasks/task.card";
 import { Button } from "@/components/ui/button";
-import { Categorie, Task, User } from "@/types/interface";
-import { use, useEffect, useState } from "react";
+import { Categorie, User } from "@/types/interface";
+import { useEffect, useState } from "react";
+
+export type typeAdmin = "catégories" | "utilisateurs";
 
 export default function Admin() {
-  const tables = ["catégories", "utilisateurs", "tâches"];
+  const tables: typeAdmin[] = ["catégories", "utilisateurs"];
 
-  const [tableData, setTableData] = useState<Task[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [categories, setCategories] = useState<Categorie[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [tableSelection, setTableSelection] = useState("utilisateurs");
-
-  const fetchDataTasks = async () => {
-    try {
-      const tasksData = await getTasks();
-      setTableData(tasksData);
-      setLoading(false);
-    } catch (err) {
-      setError("Erreur lors du chargement des tâches.");
-      console.error(err);
-      setLoading(false);
-    }
-  };
+  const [tableSelection, setTableSelection] =
+    useState<typeAdmin>("utilisateurs");
 
   const fetchDataUsers = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const usersData = await getAllUsers();
       setUsers(usersData);
@@ -38,37 +29,35 @@ export default function Admin() {
     } catch (err) {
       setError("Erreur lors du chargement des utilisateurs.");
       console.error(err);
+    } finally {
       setLoading(false);
     }
   };
 
   const fetchDataCategories = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const categoriesData = await getCategories();
       setCategories(categoriesData);
-      setLoading(false);
     } catch (err) {
       setError("Erreur lors du chargement des catégories.");
       console.error(err);
+    } finally {
       setLoading(false);
     }
   };
 
-  const handleSeeTable = async (name: string) => {
-    setLoading(true);
+  const handleSeeTable = async (name: typeAdmin) => {
     setTableSelection(name);
-    setError(null);
-
-    if (name == "tâches") {
-      fetchDataTasks();
-    } else if (name == "utilisateurs") {
+    if (name == "utilisateurs") {
       fetchDataUsers();
     } else if (name == "catégories") {
       fetchDataCategories();
     }
   };
 
-  //   par défaut on affiche les utilisateurs
+  // par défaut on affiche les utilisateurs
   useEffect(() => {
     fetchDataUsers();
   }, []);
@@ -80,35 +69,26 @@ export default function Admin() {
           <h1 className="font-bold text-xl">Gestion de nos données</h1>
           <div className="flex gap-4">
             {tables.map((table) => (
-                <Button key={table} variant="admin" onClick={() => handleSeeTable(table)}>
-                  {table}
-                </Button>
+              <Button
+                key={table}
+                variant="admin"
+                onClick={() => handleSeeTable(table)}
+              >
+                {table}
+              </Button>
             ))}
           </div>
         </div>
-        <div className="flex flex-wrap gap-3 justify-center mt-4">
-          {tableSelection === "tâches"
-            ? tableData.map((data) => (
-                <TaskCard
-                  key={data.id}
-                  task={data}
-                  onSuccess={fetchDataTasks}
-                  admin={true}
-                />
-              ))
-            : tableSelection === "utilisateurs"
-            ? users.map((user) => (
-                <UserCard
-                  key={user.id}
-                  user={user}
-                  onSuccess={fetchDataUsers}
-                />
-              ))
-            : tableSelection === "catégories"
-            ? categories.map((categorie) => (
-                <h2 key={categorie.id}>{categorie.name}</h2>
-              ))
-            : null}
+
+        {loading && <Loading />}
+        {error && <p className="text-red-500">{error}</p>}
+
+        <div className="flex justify-center">
+          <TableAdmin
+            data={tableSelection === "catégories" ? categories : users}
+            type={tableSelection}
+            onSuccess={() => handleSeeTable(tableSelection)}
+          />
         </div>
       </div>
     </Layout>

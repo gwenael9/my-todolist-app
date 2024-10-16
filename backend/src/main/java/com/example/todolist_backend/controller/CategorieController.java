@@ -2,7 +2,9 @@ package com.example.todolist_backend.controller;
 
 import com.example.todolist_backend.model.Categorie;
 import com.example.todolist_backend.service.CategorieService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,7 +32,8 @@ public class CategorieController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteCategorie(@PathVariable Long id) {
+    public ResponseEntity<String> deleteCategorie(@PathVariable Long id) {
         categorieService.deleteCategorie(id);
+        return ResponseEntity.ok("La catégorie a bien été supprimée.");
     }
 }
